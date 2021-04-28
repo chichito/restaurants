@@ -2,6 +2,7 @@ import { firebaseApp } from './firebase'
 import * as firebase from 'firebase'
 import 'firebase/firestore'
 import { fileToBlob } from './helpers'
+import { map } from 'lodash'
 
 const db = firebase.firestore(firebaseApp)
 
@@ -192,6 +193,120 @@ export const getDocumentById = async(collection, id) => {
     return result
 }
 
+export const updateDocument = async(collection, id, data) => {
+    const result = { statusResponse: true, error: null }
+
+    try {
+        await db.collection(collection).doc(id).update(data)
+    } catch (error) {
+        result.statusResponse = false
+        result.error = error
+    }
+
+    return result
+}
+
+export const getRestaurantReviews = async(id) => {
+    const result = { statusResponse: true, error: null, reviews: [] }
+    console.log(id)
+    try {
+        const response = await db
+        .collection("reviews")
+        .where("idRestaurant", "==", id)
+        //.orderBy("createAt","desc")
+        .get()
+        response.forEach((doc) => {
+            const review = doc.data() 
+            review.id = doc.id
+            result.reviews.push(review)
+        })
+    } catch (error) {
+        result.statusResponse = false
+        result.error = error
+    }
+
+    return result
+}
+
+export const getIsFavorite = async( idRestaurant ) => {
+    const result = { statusResponse: true, error: null, isFavorite: false }
+
+    try {
+        const response = await db.collection("favorites")
+                                .where("idRestaurant","==",idRestaurant)
+                                .where("idUser","==",getCurrecntUser().uid)
+                                .get()
+        result.isFavorite = response.docs.length > 0
+    } catch (error) {
+        result.statusResponse = false
+        result.error = error
+    }
+
+    return result
+}
+
+export const deleteFavorite = async( idRestaurant ) => {
+    const result = { statusResponse: true, error: null }
+
+    try {
+        const response = await db.collection("favorites")
+                                .where("idRestaurant","==",idRestaurant)
+                                .where("idUser","==",getCurrecntUser().uid)
+                                .get()
+        response.forEach(async(doc) => {
+            const favoriteId = doc.id
+            await db.collection("favorites").doc(favoriteId).delete()
+        })
+    } catch (error) {
+        result.error = error
+    }
+
+    return result
+}
+
+export const getFavorite = async( idRestaurant ) => {
+    const result = { statusResponse: true, error: null, favorites: [] }
+
+    try {
+        const response = await db.collection("favorites")
+                                .where("idUser","==",getCurrecntUser().uid)
+                                .get()
+        await Promise.all(
+            map(response.docs, async(doc) =>{
+                const favorite = doc.data()
+                const restaurant = await getDocumentById("restaurants", favorite.idRestaurant)
+                if(restaurant.statusResponse){
+                    result.favorites.push(restaurant.document)
+                }
+            })
+        )
+    } catch (error) {
+        result.error = error
+    }
+
+    return result
+}
+
+export const getToRestaurants = async( limit ) => {
+    const result = { statusResponse: true, error: null, restaurants: [] }
+
+    try {
+        const response = await db.collection("restaurants")
+                                .orderBy("rating", "desc")
+                                .limit(limit)
+                                .get()
+        response.forEach((doc) => {
+            const restaurant = doc.data()
+            restaurant.id = doc.id
+            result.restaurants.push(restaurant)
+        })
+    } catch (error) {
+        result.statusResponse = false
+        result.error = error
+    }
+
+    return result
+}
 
 export const formaPhone = (callingCode, phone) => {
     return `+(${callingCode}) ${phone.substr(0,3)} ${phone.substr(3,3)} ${phone.substr(6,6)}`

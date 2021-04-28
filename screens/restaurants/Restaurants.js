@@ -31,7 +31,7 @@ export default function Restaurants({ navigation }) {
                 if(response.statusResponse){
                     setStartRestaurant(response.startRestaurant)
                     setRestaurants(response.restaurants)
-                }
+                }                
                 setLoading(false)
             }
             getData()
