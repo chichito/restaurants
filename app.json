@@ -21,13 +21,13 @@
       "bundleIdentifier": "com.cando.restaurants"
     },
     "android": {
-      "package" : "com.cando.restaurants",
+      "package": "com.cando.restaurants",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "config":{
-        "googleMaps":{
+      "config": {
+        "googleMaps": {
           "apiKey": "AIzaSyDxWHMHY6mRXeZKtrqKPIJsCQKLT9s0p_w"
         }
       },

@@ -1,10 +1,12 @@
 import { firebaseApp } from './firebase'
+import { FireSQL } from 'firesql'
 import * as firebase from 'firebase'
 import 'firebase/firestore'
 import { fileToBlob } from './helpers'
 import { map } from 'lodash'
 
 const db = firebase.firestore(firebaseApp)
+const fireSQL = new fireSQL(firebase.firestore(), { includeId: "id" })
 
 export const isUserLogged = () => {
     let isLogged = false
